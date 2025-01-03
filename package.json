@@ -8,7 +8,10 @@
     "start": "npm run build & nodemon",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "rezaie01",
+  "bin": {
+"timer-cli": "dist/index.js"
+  },
+  "author": "github.com/rezaie01",
   "type": "module",
   "license": "ISC",
   "description": "A simple timer cli app",
