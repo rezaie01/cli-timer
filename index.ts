@@ -18,10 +18,12 @@ program
   .action((time, options) => {
     const parsedTime = { h: 0, m: 0, s: 0 };
 
-    if ((time && options.hours) || options.minutes || options.seconds)
-      return logError(
+    if (time && (options.hours || options.minutes || options.seconds)) {
+      logError(
         "You cannot use both positional time argument and --hours, --minutes, or --seconds options."
       );
+      return;
+    }
 
     if (time) {
       const hhMmSs = parseTimeHHMMSS(time);
@@ -49,32 +51,34 @@ async function timer(
   const end = start + seconds * 1000;
 
   await new Promise((resolve) => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      if (now >= end) {
+        clearInterval(interval);
+        console.log(`${chalk.blue("Remaining Time: ")}${formatTime(0, 0, 0)}`);
+        if (options.alert) playSound();
+        resolve(0);
+      } else {
+        const msPassed = now - start;
 
-  const interval = setInterval(() => {
-    const now = Date.now();
-    if (now >= end) {
-      clearInterval(interval);
-      console.log(`${chalk.blue("Remaining Time: ")}${formatTime(0, 0, 0)}`);
-      if (options.alert) playSound();
-      resolve(0)
-    } else {
-      const msPassed = now - start;
+        let time = seconds - Math.floor(msPassed / 1000);
+        const hours = Math.floor(time / 3600);
+        time %= 3600;
+        const minutes = Math.floor(time / 60);
 
-      let time = seconds - Math.floor(msPassed / 1000);
-      const hours = Math.floor(time / 3600);
-      time %= 3600;
-      const minutes = Math.floor(time / 60);
+        // seconds
+        time %= 60;
 
-      // seconds
-      time %= 60;
-
-      process.stdout.write(
-        `${chalk.blue("Remaining Time: ")}${formatTime(hours, minutes, time)}\r`
-      );
-    }
-  }, 1000);
-
-  }) 
+        process.stdout.write(
+          `${chalk.blue("Remaining Time: ")}${formatTime(
+            hours,
+            minutes,
+            time
+          )}\r`
+        );
+      }
+    }, 1000);
+  });
 }
 
 function parseTimeHHMMSS(

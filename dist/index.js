@@ -12,8 +12,10 @@ program
     .option("--alert", "play a ding sound twice")
     .action((time, options) => {
     const parsedTime = { h: 0, m: 0, s: 0 };
-    if ((time && options.hours) || options.minutes || options.seconds)
-        return logError("You cannot use both positional time argument and --hours, --minutes, or --seconds options.");
+    if (time && (options.hours || options.minutes || options.seconds)) {
+        logError("You cannot use both positional time argument and --hours, --minutes, or --seconds options.");
+        return;
+    }
     if (time) {
         const hhMmSs = parseTimeHHMMSS(time);
         if (!hhMmSs)
