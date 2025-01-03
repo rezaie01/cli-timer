@@ -42,13 +42,29 @@ program.parse();
 
 // The timer
 async function timer(
-  seconds: number,
+  secs: number,
   options: { alert: boolean } = { alert: false }
 ) {
-  if (isNaN(seconds)) console.error("Invalid number of seconds");
+  if (isNaN(secs)) console.error("Invalid number of seconds");
 
   const start = Date.now();
-  const end = start + seconds * 1000;
+  const end = start + secs * 1000;
+
+  process.on("SIGINT", () => {
+    const msPassed = Date.now() - start;
+    let time = secs - Math.floor(msPassed / 1000);
+    var { hours, minutes, seconds } = secondsToHoursMinutesSeconds(time);
+
+    process.stdout.write(
+      `${chalk.blue("Remaining Time: ")}${formatTime(
+        hours,
+        minutes,
+        seconds
+      )}`
+    );
+    console.log(chalk.yellow(`\nCanceling the timer`));
+    process.exit(0);
+  });
 
   await new Promise((resolve) => {
     const interval = setInterval(() => {
@@ -60,25 +76,29 @@ async function timer(
         resolve(0);
       } else {
         const msPassed = now - start;
-
-        let time = seconds - Math.floor(msPassed / 1000);
-        const hours = Math.floor(time / 3600);
-        time %= 3600;
-        const minutes = Math.floor(time / 60);
-
-        // seconds
-        time %= 60;
+        let time = secs - Math.floor(msPassed / 1000);
+        var { hours, minutes, seconds } = secondsToHoursMinutesSeconds(time);
 
         process.stdout.write(
           `${chalk.blue("Remaining Time: ")}${formatTime(
             hours,
             minutes,
-            time
+            seconds
           )}\r`
         );
       }
     }, 1000);
   });
+}
+
+function secondsToHoursMinutesSeconds(time: number) {
+  const hours = Math.floor(time / 3600);
+  time %= 3600;
+  const minutes = Math.floor(time / 60);
+
+  // seconds
+  time %= 60;
+  return { hours, minutes, seconds: time };
 }
 
 function parseTimeHHMMSS(
