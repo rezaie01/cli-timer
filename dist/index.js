@@ -30,26 +30,28 @@ async function timer(seconds, options = { alert: false }) {
         console.error("Invalid number of seconds");
     const start = Date.now();
     const end = start + seconds * 1000;
-    const interval = setInterval(() => {
-        const now = Date.now();
-        if (now >= end) {
-            clearInterval(interval);
-            console.log(`${chalk.blue("Remaining Time: ")}${formatTime(0, 0, 0)}`);
-            if (options.alert)
-                playSound();
-        }
-        else {
-            const msPassed = now - start;
-            let time = seconds - Math.floor(msPassed / 1000);
-            const hours = Math.floor(time / 3600);
-            time %= 3600;
-            const minutes = Math.floor(time / 60);
-            // seconds
-            time %= 60;
-            process.stdout.write(`${chalk.blue("Remaining Time: ")}${formatTime(hours, minutes, time)}\r`);
-        }
-    }, 1000);
-    await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+    await new Promise((resolve) => {
+        const interval = setInterval(() => {
+            const now = Date.now();
+            if (now >= end) {
+                clearInterval(interval);
+                console.log(`${chalk.blue("Remaining Time: ")}${formatTime(0, 0, 0)}`);
+                if (options.alert)
+                    playSound();
+                resolve(0);
+            }
+            else {
+                const msPassed = now - start;
+                let time = seconds - Math.floor(msPassed / 1000);
+                const hours = Math.floor(time / 3600);
+                time %= 3600;
+                const minutes = Math.floor(time / 60);
+                // seconds
+                time %= 60;
+                process.stdout.write(`${chalk.blue("Remaining Time: ")}${formatTime(hours, minutes, time)}\r`);
+            }
+        }, 1000);
+    });
 }
 function parseTimeHHMMSS(timeStr) {
     let timeObj = {};

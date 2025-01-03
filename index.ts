@@ -47,12 +47,15 @@ async function timer(
   const start = Date.now();
   const end = start + seconds * 1000;
 
+  await new Promise((resolve) => {
+
   const interval = setInterval(() => {
     const now = Date.now();
     if (now >= end) {
       clearInterval(interval);
       console.log(`${chalk.blue("Remaining Time: ")}${formatTime(0, 0, 0)}`);
       if (options.alert) playSound();
+      resolve(0)
     } else {
       const msPassed = now - start;
 
@@ -70,9 +73,7 @@ async function timer(
     }
   }, 1000);
 
-  await new Promise((resolve) =>
-    setTimeout(resolve, seconds * 1000)
-  );
+  }) 
 }
 
 function parseTimeHHMMSS(
