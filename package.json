@@ -1,0 +1,22 @@
+{
+  "name": "timer-cli",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -w",
+    "run": "node dist/index.js",
+    "start": "npm run build & nodemon",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "rezaie01",
+  "type": "module",
+  "license": "ISC",
+  "description": "A simple timer cli app",
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "commander": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.4"
+  }
+}
