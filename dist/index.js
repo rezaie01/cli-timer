@@ -2,6 +2,7 @@
 import chalk from "chalk";
 import { spawn } from "child_process";
 import { Command } from "commander";
+import path from "path";
 const program = new Command("cmd-timer");
 program
     .description("A simple command line timer")
@@ -123,11 +124,13 @@ function logError(str) {
     console.error(chalk.red(chalk.bold("[error]: ") + str));
 }
 function playSound() {
-    const dingPlay = spawn(`mpg123`, ["ding.mp3"], {
+    const sound = path.join(import.meta.dirname.split('/dist')[0], "ding.mp3");
+    console.log(sound);
+    const dingPlay = spawn(`mpg123`, [sound], {
         stdio: "ignore",
         detached: true,
     });
     dingPlay.on("exit", () => {
-        spawn(`mpg123`, ["ding.mp3"], { stdio: "ignore", detached: true });
+        spawn(`mpg123`, [sound], { stdio: "ignore", detached: true });
     });
 }
