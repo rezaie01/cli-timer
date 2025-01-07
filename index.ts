@@ -205,6 +205,9 @@ function logError(str: string) {
   console.error(chalk.red(chalk.bold("[error]: ") + str));
 }
 
+/**
+ * Uses a cross platfrom player to play the alert sound
+ */
 function playSound() {
   const sound = path.join(import.meta.dirname.split("/dist")[0], "ding.mp3");
   const player = soundPlayer();
