@@ -3,7 +3,15 @@ import chalk from "chalk";
 import { exec, execSync, spawn } from "child_process";
 import { Command } from "commander";
 import path from "path";
-import soundPlayer from 'play-sound'
+import soundPlayer from "play-sound";
+
+type TTimeOptions = {
+  hours: number;
+  minutes: number;
+  seconds: number;
+};
+
+type TOptions = TTimeOptions & { alert: boolean };
 
 const program = new Command("cmd-timer");
 
@@ -13,11 +21,17 @@ program
     "[time]",
     "The duration of timer can be in formats HH:MM:SS, MM:SS, number of seconds, or e.g. 2h33m10s"
   )
-  .option("-h, --hours <number>", "number of hours")
-  .option("-m, --minutes <number>", "number of minutes")
-  .option("-s, --seconds <number>", "number of seconds")
+  .option("-h, --hours <number>", "number of hours", (value, _) =>
+    Number(value)
+  )
+  .option("-m, --minutes <number>", "number of minutes", (value, _) =>
+    Number(value)
+  )
+  .option("-s, --seconds <number>", "number of seconds", (value, _) =>
+    Number(value)
+  )
   .option("--alert", "play a ding sound twice")
-  .action((time, options) => {
+  .action((time, options: TOptions) => {
     const parsedTime = { h: 0, m: 0, s: 0 };
 
     if (time && (options.hours || options.minutes || options.seconds)) {
@@ -27,17 +41,27 @@ program
       return;
     }
 
+    let hhMmSs: TTime | undefined = undefined;
+
     if (time) {
-      const hhMmSs = parseTimeHHMMSS(time);
-
-      if (!hhMmSs) return;
-
-      console.log(chalk.bold("Time Starting: " + new Date().toLocaleString() + ` | Duration: ${formatTime(hhMmSs.h, hhMmSs.m, hhMmSs.s)}`));
-
-      timer(hhMmSs.h * 3600 + hhMmSs.m * 60 + hhMmSs.s, {
-        alert: options.alert,
-      });
+      hhMmSs = parseTimeHHMMSS(time);
+    } else {
+      hhMmSs = parseTimeHHMMSS(options);
     }
+
+    if (!hhMmSs) return;
+
+    console.log(
+      chalk.bold(
+        "Time Starting: " +
+          new Date().toLocaleString() +
+          ` | Duration: ${formatTime(hhMmSs.h, hhMmSs.m, hhMmSs.s)}`
+      )
+    );
+
+    timer(hhMmSs.h * 3600 + hhMmSs.m * 60 + hhMmSs.s, {
+      alert: options.alert,
+    });
   });
 
 program.parse();
@@ -58,11 +82,7 @@ async function timer(
     var { hours, minutes, seconds } = secondsToHoursMinutesSeconds(time);
 
     process.stdout.write(
-      `${chalk.blue("Remaining Time: ")}${formatTime(
-        hours,
-        minutes,
-        seconds
-      )}`
+      `${chalk.blue("Remaining Time: ")}${formatTime(hours, minutes, seconds)}`
     );
     console.log(chalk.yellow(`\nCanceling the timer`));
     process.exit(0);
@@ -103,26 +123,37 @@ function secondsToHoursMinutesSeconds(time: number) {
   return { hours, minutes, seconds: time };
 }
 
-function parseTimeHHMMSS(
-  timeStr: string
-): { h: number; m: number; s: number } | void {
-  let timeObj: RegExpMatchArray["groups"] = {};
-  let matchResults = [
-    timeStr.match(/^(((?<h>[0-5]?[0-9]):)?((?<m>[0-5]?\d):(?<s>[0-5]?\d)))$/),
-    timeStr.match(/^(?<s>\d+)$/),
-    timeStr.match(/^(((?<h>\d\d?)h)?((?<m>\d\d?)m)?((?<s>\d\d?)s)?)$/),
-  ];
+type TTime = {
+  h: number;
+  m: number;
+  s: number;
+};
 
-  matchResults.forEach((matchObj) => {
-    if (matchObj) timeObj = matchObj.groups ?? {};
-  });
+function parseTimeHHMMSS(timeStr: string | TTimeOptions): TTime | undefined {
+  let { h, m, s }: { [key: string]: any } =
+    typeof timeStr === "object"
+      ? { h: timeStr.hours, m: timeStr.minutes, s: timeStr.seconds }
+      : {};
 
-  let { h, m, s }: { [key: string]: any } = timeObj;
+  if (typeof timeStr === "string") {
+    let timeObj: RegExpMatchArray["groups"] = {};
+    let matchResults = [
+      timeStr.match(/^(((?<h>[0-5]?[0-9]):)?((?<m>[0-5]?\d):(?<s>[0-5]?\d)))$/),
+      timeStr.match(/^(?<s>\d+)$/),
+      timeStr.match(/^(((?<h>\d\d?)h)?((?<m>\d\d?)m)?((?<s>\d\d?)s)?)$/),
+    ];
+
+    matchResults.forEach((matchObj) => {
+      if (matchObj) timeObj = matchObj.groups ?? {};
+    });
+
+    ({ h, m, s } = timeObj);
+  }
 
   (h = Number(h)), (m = Number(m)), (s = Number(s));
 
   if (isNaN(h) && isNaN(m) && isNaN(s)) {
-    return logError(`
+    logError(`
 Invalid time provided.
 Please provide the time using the following methods:
   \u2022 hh:mm:ss e.g. 02:00:30
@@ -133,14 +164,17 @@ Please provide the time using the following methods:
 
 ${chalk.bold("Remember that time cannot be negative.")}
             `);
+    return;
   }
 
   h = isNaN(h) ? 0 : h;
   m = isNaN(m) ? 0 : m;
   s = isNaN(s) ? 0 : s;
 
-  if (h == 0 && m == 0 && s == 0)
-    return logError("Timer will not start because provided time is 0.");
+  if (h == 0 && m == 0 && s == 0) {
+    logError("Timer will not start because provided time is 0.");
+    return;
+  }
 
   if (s > 59) {
     m += Math.floor(s / 60);
@@ -151,7 +185,10 @@ ${chalk.bold("Remember that time cannot be negative.")}
     m = m % 60;
   }
 
-  if (h > 23) return logError("Time cannot be longer than a day");
+  if (h > 23) {
+    logError("Time cannot be longer than a day");
+    return;
+  }
 
   return { h, m, s };
 }
@@ -170,9 +207,9 @@ function logError(str: string) {
 }
 
 function playSound() {
-  const sound = path.join(import.meta.dirname.split('/dist')[0], "ding.mp3") 
-  const player = soundPlayer()
+  const sound = path.join(import.meta.dirname.split("/dist")[0], "ding.mp3");
+  const player = soundPlayer();
   player.play(sound, (_) => {
-    player.play(sound)
-  })
+    player.play(sound);
+  });
 }
