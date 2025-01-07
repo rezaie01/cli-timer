@@ -32,7 +32,7 @@ program
 
       if (!hhMmSs) return;
 
-      console.log(chalk.bold("Time Starting: " + new Date().toLocaleString()));
+      console.log(chalk.bold("Time Starting: " + new Date().toLocaleString() + ` | Duration: ${formatTime(hhMmSs.h, hhMmSs.m, hhMmSs.s)}`));
 
       timer(hhMmSs.h * 3600 + hhMmSs.m * 60 + hhMmSs.s, {
         alert: options.alert,
