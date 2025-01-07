@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import chalk from "chalk";
-import { exec, execSync, spawn } from "child_process";
 import { Command } from "commander";
 import path from "path";
 import soundPlayer from "play-sound";
