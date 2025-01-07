@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import chalk from "chalk";
-import { spawn } from "child_process";
 import { Command } from "commander";
 import path from "path";
+import soundPlayer from 'play-sound';
 const program = new Command("cmd-timer");
 program
     .description("A simple command line timer")
@@ -125,12 +125,8 @@ function logError(str) {
 }
 function playSound() {
     const sound = path.join(import.meta.dirname.split('/dist')[0], "ding.mp3");
-    console.log(sound);
-    const dingPlay = spawn(`mpg123`, [sound], {
-        stdio: "ignore",
-        detached: true,
-    });
-    dingPlay.on("exit", () => {
-        spawn(`mpg123`, [sound], { stdio: "ignore", detached: true });
+    const player = soundPlayer();
+    player.play(sound, (_) => {
+        player.play(sound);
     });
 }

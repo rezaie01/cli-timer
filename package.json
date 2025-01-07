@@ -9,7 +9,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
-"clock-cli": "dist/index.js"
+    "clock-cli": "dist/index.js"
   },
   "author": "github.com/rezaie01",
   "type": "module",
@@ -17,9 +17,11 @@
   "description": "A simple timer cli app",
   "dependencies": {
     "chalk": "^5.4.1",
-    "commander": "^13.0.0"
+    "commander": "^13.0.0",
+    "play-sound": "^1.1.6"
   },
   "devDependencies": {
-    "@types/node": "^22.10.4"
+    "@types/node": "^22.10.4",
+    "@types/play-sound": "^1.1.2"
   }
 }
