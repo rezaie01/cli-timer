@@ -1,8 +1,14 @@
 #!/usr/bin/env node
 import chalk from "chalk";
 import { Command } from "commander";
+import { readFile } from "fs/promises";
 import path from "path";
 import soundPlayer from "play-sound";
+
+const {
+  version: pkgVersion,
+  name: pkgName,
+}: { version: string; name: string } = await readJsonFile("package.json");
 
 type TTimeOptions = {
   hours: number;
@@ -10,12 +16,14 @@ type TTimeOptions = {
   seconds: number;
 };
 
-type TOptions = TTimeOptions & { alert: boolean };
+type TOptions = TTimeOptions & { alert: boolean, version: boolean};
 
 const program = new Command("cmd-timer");
 
 program
   .description("A simple command line timer")
+  .option("-v, --version", "output the version number")
+  .action((options: { version: boolean }) => {})
   .argument(
     "[time]",
     "The duration of timer can be in formats HH:MM:SS, MM:SS, number of seconds, or e.g. 2h33m10s"
@@ -31,15 +39,19 @@ program
   )
   .option("--alert", "play a ding sound twice")
   .action((time, options: TOptions) => {
-    const parsedTime = { h: 0, m: 0, s: 0 };
+    console.log(options);
+    if (options.version) {
+      console.log(`${pkgName}: v${pkgVersion}`);
+      return process.exit(0);
+    }
 
+    const parsedTime = { h: 0, m: 0, s: 0 };
     if (time && (options.hours || options.minutes || options.seconds)) {
       logError(
         "You cannot use both positional time argument and --hours, --minutes, or --seconds options."
       );
       return;
     }
-
     let hhMmSs: TTime | undefined = undefined;
 
     if (time) {
@@ -214,4 +226,9 @@ function playSound() {
   player.play(sound, (_) => {
     player.play(sound);
   });
+}
+
+async function readJsonFile(filename: string): Promise<any> {
+  const file = await readFile(filename, { encoding: "utf-8" });
+  return JSON.parse(file);
 }
