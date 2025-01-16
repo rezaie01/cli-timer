@@ -1,6 +1,6 @@
 {
   "name": "clock-cli",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "bin/index.js",
   "scripts": {
     "build": "tsc -w",
