@@ -209,7 +209,7 @@ function logError(str: string) {
  * Uses a cross platfrom player to play the alert sound
  */
 function playSound() {
-  const sound = path.join(import.meta.dirname.split("/dist")[0], "ding.mp3");
+  const sound = path.join(import.meta.dirname.split("/bin")[0], "ding.mp3");
   const player = soundPlayer();
   player.play(sound, (_) => {
     player.play(sound);
