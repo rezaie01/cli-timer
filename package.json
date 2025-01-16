@@ -1,6 +1,6 @@
 {
   "name": "clock-cli",
-  "version": "1.0.4",
+  "version": "1.0.5-0",
   "main": "bin/index.js",
   "scripts": {
     "build": "tsc -w",
@@ -11,9 +11,9 @@
   "bin": {
     "clock-cli": "bin/index.js"
   },
-  "files": ["ding.mp3"],
-
-  
+  "files": [
+    "ding.mp3"
+  ],
   "author": "github.com/rezaie01",
   "type": "module",
   "license": "ISC",
